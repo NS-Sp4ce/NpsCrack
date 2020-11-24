@@ -2,7 +2,7 @@
 Author         : Sp4ce
 Date           : 2020-11-23 11:31:02
 LastEditors    : Sp4ce
-LastEditTime   : 2020-11-24 19:45:25
+LastEditTime   : 2020-11-24 19:52:05
 Description    : Challenge Everything.
 '''
 import argparse
@@ -281,6 +281,7 @@ class npsCrack:
                         f.write(json.dumps(allRows, indent=2))
             except:
                 logger.error('Tunnels connect failed.')
+        self.clientsId=[]
 
 
     def run(self):
