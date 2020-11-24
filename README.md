@@ -34,8 +34,10 @@ optional arguments:
 ```
 单目标：
 `python3 nps-crack.py -target http://xxx.xxx.xxx.xxx [-username USERNAMEFILE] [-password PASSWORDFILE]`
+
 多目标：
 `python3 nps-crack.py -target /path/to/file [-username USERNAMEFILE] [-password PASSWORDFILE]`
+
 缺省用户：admin/123
 
 # 截图
