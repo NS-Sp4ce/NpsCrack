@@ -327,7 +327,7 @@ class npsCrack:
             with open(self.targetFile) as target:
                 self.urls = target.read().splitlines()
         else:
-            self.urls = self.targetFile
+            self.urls = self.targetFile.split()
 
         if self.passwordFile is not None and os.path.isfile(self.passwordFile):
             with open(self.passwordFile) as password:
